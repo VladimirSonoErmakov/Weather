@@ -1,9 +1,10 @@
 import requests
+import json
 import time
 from APIToken import API_TOKEN
 
 
-class current_weather: #   нужно добавить рассчёт суточных остадков
+class Weather: #   нужно добавить рассчёт суточных остадков
     
     def __init__(self, temp, winddirection, falls, clouds, pressure):
         self.temp = temp
@@ -15,9 +16,10 @@ class current_weather: #   нужно добавить рассчёт суточ
     def h_PA_to_MM(self):
         self.pressure //= 1.33 
         
-   
+def prepare_string_for_logfile():
+     pass  
         
-def write_to_log (logname, lodgata): 
+def write_string_to_log (logname, lodgata): 
     # нужно переписать: создание временного файла, запись lodgata, построчное копирование старого лога, сохранение временного ф-ла
     # удаление старого лога, переименоване временного ф-ла в лог-файл. Разберись, что блокирует удаление старого лога
     
@@ -30,22 +32,25 @@ def write_to_log (logname, lodgata):
     
 
 time_stamp = time.strftime ("%d")+"-"+ time.strftime ("%m")+"-"+time.strftime ("%Y")+" "+ time.strftime ("%X")+ "  "
-params={"q":"khimki","appid":API_TOKEN, "units":"metric", "lang":"ru" }
-lineweather=""
-responce = requests.get("https://api.openweathermap.org/data/2.5/weather", params=params)
-# Обернуть responce в TRY на случай если интернета нет
+params_for_API_request={"q":"khimki","appid":API_TOKEN, "units":"metric", "lang":"ru" }
+weather_data_in_dictionary="" #переимунуй нормально!
+API_responce = requests.get("https://api.openweathermap.org/data/2.5/weather", params=params_for_API_request)
+# Обернуть API_responce в TRY на случай если интернета нет
 
 
 
-if responce:
+if API_responce:
     print("request processed OK!")
-    weather = responce.json() 
-    lineweather = (time_stamp + "Погода " + str(weather['name']) + ": " +  str(weather['weather'][0]['description']) + ", Температура: " 
-                   + str(round((weather['main']['temp']),0)) +  "C, влажность: " + str(weather['main']['humidity']) 
-                   + "%, давление: " +  str(weather['main']['pressure']) + "hPa \n")
+    #Weather_Data = weather_class(temp, winddirection, falls, clouds, pressure)
+    #weather_data_in_dictionary=json.loads(API_responce)
+   
+   
+   
+    weather = API_responce.json() 
+    weather_data_in_dictionary = (f"{time_stamp} Погода: {str(weather['name'])}: {str(weather['weather'][0]['description'])}, Температура: {str(round((weather['main']['temp']),0))}C, влажность: {str(weather['main']['humidity'])} %, давление: {str(weather['main']['pressure'])}hPa \n")
     # переписать lineweather - разложить в объект current_weather пересчитав давление в мм ртути
-    print(lineweather)
-    write_to_log ('logfile.txt', lineweather)
+    print(weather_data_in_dictionary)
+    #write_string_to_log ('logfile.txt', lineweather)
 else: 
     print('request failed')
-    write_to_log ('logfile.txt', time_stamp ,  " request failed")
+    write_string_to_log ('logfile.txt', time_stamp ,  " request failed")
